@@ -1,0 +1,70 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/sistema_caca_niqueis/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Ponto {
+  id            String    @id @default(cuid())
+  nome          String
+  endereco      String?
+  ativo         Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  machines      Machine[]
+}
+
+model Machine {
+  id                String    @id @default(cuid())
+  nome              String
+  tipo              String?
+  valorMoeda        Float     @default(1)
+  localizacao       String
+  porcentagemPonto  Float     @default(30)
+  ativa             Boolean   @default(true)
+  pontoId           String?
+  ponto             Ponto?    @relation(fields: [pontoId], references: [id], onDelete: SetNull)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  readings          Reading[]
+
+  @@index([pontoId])
+}
+
+model Reading {
+  id                    String    @id @default(cuid())
+  machineId             String
+  machine               Machine   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  data                  DateTime  @default(now())
+  entradaAtual          Float
+  saidaAtual            Float
+  displayValor          Float
+  displayAnterior       Float     @default(0)
+  displayPeriodo        Float     @default(0)
+  entradaAnterior       Float     @default(0)
+  saidaAnterior         Float     @default(0)
+  entradaPeriodo        Float
+  saidaPeriodo          Float
+  lucroPeriodo          Float
+  houveReset            Boolean   @default(false)
+  porcentagemPontoUsada Float
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([machineId])
+  @@index([data])
+}
